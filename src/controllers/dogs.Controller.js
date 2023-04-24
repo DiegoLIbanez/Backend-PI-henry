@@ -5,7 +5,13 @@ const createDog = async (req, res) => {
   const { name, life_span, weight, height, image, temperament } = req.body;
   try {
     const dog = await Dog.create({ name, life_span, weight, height, image });
-    dog.addTemperament(temperament);
+
+    const temperamentDb = await Temperament.findAll({
+      where: {
+        name: temperament,
+      },
+    })
+    dog.addTemperament(temperamentDb);
     res.status(201).json({ message: "agregado con exito" });
   } catch (err) {
     res.status(400).json({ err: err.message });
@@ -52,6 +58,7 @@ const getDogByIdRaza = async (req, res) => {
             weight: element.weight,
             height: element.height,
             image: element.image,
+            createdInDb: element.createdInDb,
             temperaments: element.temperaments.map(obj => obj.name).join(', ')
           };
         });
@@ -63,8 +70,11 @@ const getDogByIdRaza = async (req, res) => {
   }
 };
 
+//Buscar todos los dogs o por query;
 const getDog = async (req, res) => {
+
   const {name} = req.query;
+  
   try {
    if(name){
     const dogs = await Dog.findAll({
@@ -86,7 +96,8 @@ const getDog = async (req, res) => {
         life_span: element.life_span,
         weight: element.weight,
         height: element.height,
-        image: element.image,
+        image: element.image, 
+        createdInDb:element.createdInDb,
         temperaments: element.temperaments.map(obj => obj.name).join(', ')
       };
     });
@@ -102,25 +113,15 @@ const getDog = async (req, res) => {
           weight: res.weight.imperial,
           height: res.height.imperial,
           image: res.image.url,
-          temperaments: res.temperament?.split(",").map(elemt => {return {name: elemt.trim()}}),
+          temperaments: res.temperament,
         };
       });
       const response = [...resultDogs,...dataClean];
       const result = response.filter(res => res.name.toLowerCase().includes(name.toLowerCase()));
+      res.json(result).status(200);
 
-         const CleanresultDogs = result.map(element => {
-      return {
-        id: element.id,
-        name: element.name,
-        life_span: element.life_span,
-        weight: element.weight,
-        height: element.height,
-        image: element.image,
-        temperaments: element.temperaments.map(obj => obj.name).join(', ')
-      };
-    });
-      res.json(CleanresultDogs).status(200);
    }else{
+
     const { data } = await axios.get(
         "https://api.thedogapi.com/v1/breeds?api_key=BEM4VPYma78fkZ5pe0B5NQz7YMDwovXi"
       );
@@ -154,12 +155,14 @@ const getDog = async (req, res) => {
           life_span: element.life_span,
           weight: element.weight,
           height: element.height,
-          image: element.image,
+          image: element.image, 
+          createdInDb: element.createdInDb,
           temperaments: element.temperaments.map(obj => obj.name).join(', ')
         };
       });
 
       const response = [...resultDogs, ...dataClean];
+      
       res.json(response).status(200);
    }
   } catch (error) {
