@@ -36,7 +36,7 @@ const getDogByIdRaza = async (req, res) => {
               temperaments: res.temperament,
             };
           });
-          const result = dataClean.find(res => res.id == id);
+          const result = dataClean.filter(res => res.id == id);
           res.json(result).status(200);
       }else{
         const dog = await Dog.findByPk(id, {
@@ -170,4 +170,19 @@ const getDog = async (req, res) => {
   }
 };
 
-module.exports = { createDog, getDog, getDogByIdRaza };
+
+const deleteDog = async(req, res) => { 
+    try {
+      const {id} = req.params;
+      await Dog.destroy({
+        where: {
+          id: id,
+        },
+      })
+      res.status(200).json({ message: "eliminado con exito" });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+}
+
+module.exports = { createDog, getDog, getDogByIdRaza, deleteDog };
