@@ -2,9 +2,9 @@ const { Dog, Temperament } = require("../db/db");
 const axios = require("axios");
 
 const createDog = async (req, res) => {
-  const { name, life_span, weight, height, image, temperament } = req.body;
+  const { name, price, life_span, weight, height, image, temperament } = req.body;
   try {
-    const dog = await Dog.create({ name, life_span, weight, height, image });
+    const dog = await Dog.create({ name, price, life_span, weight, height, image });
 
     const temperamentDb = await Temperament.findAll({
       where: {
@@ -116,6 +116,7 @@ const getDog = async (req, res) => {
           temperaments: res.temperament,
         };
       });
+      
       const response = [...resultDogs,...dataClean];
       const result = response.filter(res => res.name.toLowerCase().includes(name.toLowerCase()));
       res.json(result).status(200);
@@ -151,6 +152,7 @@ const getDog = async (req, res) => {
       const resultDogs = dogs.map(element => {
         return {
           id: element.id,
+          price: element.price,
           name: element.name,
           life_span: element.life_span,
           weight: element.weight,
@@ -169,6 +171,8 @@ const getDog = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
+
+
 
 
 const deleteDog = async(req, res) => { 
